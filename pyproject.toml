@@ -7,7 +7,7 @@ name = "aide"
 version = "0.1.0"
 description = "Starter scaffold for an ML platform with training, inference API, and deployment assets."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12,<3.13"
 authors = [
 	{ name = "ML Platform Team" }
 ]
@@ -30,11 +30,11 @@ name = "pytorch-cu126"
 url = "https://download.pytorch.org/whl/cu126"
 explicit = true
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-	"docformatter",
-	"pytest",
-	"ruff",
+    "docformatter",
+    "pytest",
+    "ruff",
 ]
 
 [project.scripts]
@@ -57,7 +57,7 @@ testpaths = ["tests"]
 pythonpath = ["src"]
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
