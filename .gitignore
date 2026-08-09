@@ -6,4 +6,5 @@ workspace/
 *egg-info
 .ipynb*
 outputs/
-example
+example/
+cifar10/
