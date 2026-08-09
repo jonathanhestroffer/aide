@@ -1,2 +1,4 @@
 def test_aide_imports():
-    import aide
+    import importlib
+
+    importlib.import_module("aide")
