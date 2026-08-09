@@ -1,127 +1,125 @@
 # AIDE
 
-**AIDE** is the **AI Development & Engineering Framework**: a reusable foundation for
-building, training, and tracking machine-learning experiments without recreating the same
-project plumbing for every model or user.
+**AIDE** is the **AI Development & Engineering Framework**.
 
-AIDE standardizes the parts of an ML project that tend to become repetitive and fragile:
-experiment configuration, component discovery, training hardware settings, checkpoints,
-run outputs, artifact logging, and experiment tracking. Model authors keep ownership of their
-models and data code; AIDE supplies the shared runtime around them.
+It is a reusable training framework for teams or individual users who want a consistent way to
+define experiments, register custom models and components, run training through Lightning, and
+track results with MLflow without rebuilding the same project boilerplate every time.
 
-## What AIDE Does
+## What AIDE Handles
 
-- Creates self-contained experiment projects with configuration, plugins, scripts, and an
-  environment file.
-- Uses Pydantic-validated Hydra configuration to compose an experiment from model, data,
-  trainer, infrastructure, and checkpoint settings.
-- Discovers models, components, and dataset transforms through decorator-based registries.
-- Runs any model that implements AIDE's `TrainableModel` interface through a single
-  Lightning `Trainer` wrapper.
-- Delegates accelerator, device count, precision, and training duration to Lightning's
-  configurable trainer settings.
-- Tracks Lightning metrics with MLflow, stores the resolved experiment configuration as an
-  MLflow artifact, and uploads saved checkpoints to artifact storage.
-- Loads artifact-backed train, validation, and optional test datasets from a JSON manifest.
-
-## Who It Is For
-
-AIDE is designed for teams or individual practitioners who want a consistent training runtime
-across many models and projects. Each user can create an independent scaffold with its own
-`configs/`, `plugins/`, `.env`, datasets, and workspace outputs, while reusing the same AIDE
-installation and conventions.
+- Project scaffolding for new experiments
+- Hydra config composition
+- Pydantic validation of resolved experiment config
+- Registry-based loading of models, components, and transforms
+- A unified Lightning trainer wrapper
+- MLflow logging for metrics, config artifacts, and checkpoints
+- Shared dataset artifact locations for scaffolded projects
 
 ## Quick Start
 
-The default workflow creates an experiment named `example`, creates or reuses CIFAR-10
-artifacts, and trains the scaffolded CNN with the default configuration.
-
-### 1. Install AIDE with uv
-
-From the AIDE repository root, create the locked environment and install the project:
+Install AIDE from the repository root:
 
 ```bash
 uv sync --frozen
 source .venv/bin/activate
 ```
 
-The activation step makes the installed `aide` and `aide-init` launchers available in your
-shell. `uv` is used for environment and dependency installation; run generated project scripts
-with Python normally.
-
-### 2. Create an Experiment Project
+Create a scaffolded experiment project:
 
 ```bash
-aide-init example --artifact-dir /shared/aide/artifacts
+aide-init example
 cd example
 ```
 
-`aide-init` generates a project directory containing:
+This creates a project with:
 
 ```text
 example/
-  .env                         # Project, config, plugin, and data locations
-  configs/                     # Hydra configuration groups
-  plugins/                     # User-owned models and transforms
-  train.py                     # Project training launcher
+  .env
+  configs/
+  plugins/
+  train.py
 ```
 
-The `--artifact-dir` argument specifies where AIDE stores the shared dataset. AIDE creates or
-reuses `/shared/aide/artifacts/cifar10/manifest.json` and the associated `train.pt`, `val.pt`,
-and `test.pt` files in the same directory. The generated `.env` sets `AIDE_DATASET_MANIFEST`
-to the resolved manifest path, so multiple projects can reuse one CIFAR-10 download.
+By default, `aide-init` uses the current working directory as the shared artifact location and
+points `AIDE_DATASET_MANIFEST` at:
 
-Omit `--artifact-dir` to create project-local artifacts at `example/data/cifar10/`.
+```text
+./cifar10/manifest.json
+```
 
-### 3. Run the Default Experiment
+If you want multiple projects to share a different dataset location, pass `--artifact-dir`:
+
+```text
+/shared/aide/artifacts/cifar10/manifest.json
+```
+
+```bash
+aide-init example --artifact-dir /shared/aide/artifacts
+```
+
+Run the default experiment:
 
 ```bash
 python train.py --experiment=default
 ```
 
-The launcher reads the project `.env`, composes `configs/experiment/default.yaml`, imports the
-local plugins, validates the resolved configuration, and starts the unified Lightning trainer.
+That launcher reads `.env`, resolves the project config path, composes the selected Hydra
+experiment, loads local plugins, validates the result into `ExperimentConfig`, and starts the
+shared Lightning training runtime.
 
-## Experiment Outputs
+## How Configuration Works
 
-The local scaffold stores runtime outputs under `workspace/` by default:
+AIDE uses Hydra config composition, not one large hand-written config file.
 
-- `workspace/hydra_logs/`: Hydra run configuration and launch metadata.
-- `workspace/lightning_logs/`: Lightning logs and local checkpoint output.
-- `workspace/metadata/aide.db`: local SQLite MLflow tracking database.
-- `workspace/artifacts/`: MLflow artifacts, including `experiment_config.json` and uploaded
-  checkpoints.
+The scaffold gives you config groups like these:
 
-Set these environment variables before training to use different locations or a remote MLflow
-tracking server:
+- `configs/config.yaml`: global Hydra behavior, including run and sweep output directories
+- `configs/experiment/default.yaml`: the experiment entrypoint that composes the final run config
+- `configs/model/`: model selections and parameters
+- `configs/datamodule/`: dataset manifest and transform chain
+- `configs/trainer/`: Lightning trainer settings such as epochs, accelerator, devices, precision
+- `configs/infrastructure/`: MLflow tracking URI, artifact location, save directory
+- `configs/checkpoint/`: checkpoint policy for save cadence, monitored metric, and file naming
 
-```bash
-export AIDE_TRACKING_URI=http://mlflow.example.com
-export AIDE_ARTIFACT_LOCATION=s3://my-mlflow-artifacts
-export AIDE_SAVE_DIR=/path/to/lightning-logs
-```
-
-## Configuration and Hardware
-
-Experiments are composed from configuration groups under `configs/experiment/`. The default
-experiment selects a model, artifact datamodule, trainer, local infrastructure, and checkpoint
-policy. Change the trainer configuration to select Lightning-supported hardware behavior:
+The default experiment is implemented as a Hydra defaults list:
 
 ```yaml
-# configs/trainer/default.yaml
-max_epochs: 100
-accelerator: auto
-devices: auto
-precision: "32"
+defaults:
+  - /config
+  - /model@trainable.model: cnn
+  - /datamodule: artifact
+  - /trainer: default
+  - /infrastructure: local
+  - /checkpoint: default
+  - _self_
 ```
 
-For example, set `accelerator: gpu`, an appropriate `devices` value, and supported precision
-for a GPU workload. AIDE passes these fields directly to `lightning.Trainer`.
+That means AIDE composes a final config from several smaller files, then `aide.scripts.train`
+converts the resolved Hydra config into a typed `ExperimentConfig`. From there:
 
-## Add a Model or Transform
+- `trainable.model` is built from `ModelRegistry`
+- `datamodule` is built from the artifact manifest path in config
+- `trainer` fields are passed into the shared Lightning `Trainer`
+- `checkpoint` controls checkpoint cadence, naming, and monitored metric
+- `infrastructure` controls MLflow tracking, artifact storage, and output locations
 
-User-owned code belongs in the generated project's `plugins/` directory. Register a Lightning
-model that inherits from `TrainableModel`, then select it by key in configuration:
+The practical workflow is simple: change config to select behavior, and only write Python when
+you need a new model, transform, or component.
+
+For full Hydra overrides beyond selecting `--experiment`, use the lower-level training entrypoint
+instead of the generated `train.py` wrapper. The wrapper only parses `--experiment`.
+
+## Add a Model or Custom Component
+
+Custom code lives in the generated project's `plugins/` package.
+
+To add a model:
+
+1. Create a class that inherits from `TrainableModel`.
+2. Register it with `ModelRegistry`.
+3. Point config at the registered key.
 
 ```python
 from aide.core.trainable import TrainableModel
@@ -132,38 +130,62 @@ from aide.registry.registries import ModelRegistry
 class MyModel(TrainableModel): ...
 ```
 
-The framework imports project plugin files before it builds the configured model and datamodule.
-Models must implement Lightning's `forward`, `training_step`, and `configure_optimizers`
-methods. Optional preprocessor and postprocessor components are also selected by configuration.
+Then select it in Hydra config by setting the model config's `class_name` to `my_model`.
 
-## AIDE Commands
+Custom components follow the same pattern:
+
+- `ComponentRegistry` for preprocessors and postprocessors used by a model
+- `TransformRegistry` for dataset transforms applied by the datamodule
+
+At startup, AIDE imports the local plugin package before construction so registration side
+effects populate the registries. The factories then instantiate the configured classes from
+their `class_name` and `params` fields.
+
+## Outputs
+
+By default, a scaffolded project writes to `workspace/`:
+
+- `workspace/hydra_logs/` for Hydra run metadata
+- `workspace/lightning_logs/` for Lightning outputs
+- `workspace/metadata/aide.db` for local MLflow tracking
+- `workspace/artifacts/` for MLflow artifacts such as config snapshots and checkpoints
+
+Override these with environment variables such as `AIDE_TRACKING_URI`,
+`AIDE_ARTIFACT_LOCATION`, and `AIDE_SAVE_DIR`.
+
+## Commands
 
 ```bash
-aide-init <directory> --artifact-dir <dir> # Create a scaffold and configure shared CIFAR-10 artifacts
-aide init <experiment-name>              # Create <experiment-name> under the current directory
-aide train [Hydra arguments]             # Start training through the AIDE CLI
-aide list <project-path> [--kind models] # Inspect registered models, components, or transforms
+aide-init <directory> --artifact-dir <dir>
+aide init <experiment-name>
+aide train [Hydra arguments]
+aide list <project-path> [--kind models|components|transforms]
 ```
 
-The generated `train.py` is the recommended launcher for a scaffolded project because it reads
-the local `.env` file and selects the project configuration path automatically.
+For scaffolded projects, `python train.py --experiment=...` is the preferred entrypoint because
+it automatically uses the project's `.env` and `configs/` directory.
 
-## Repository Layout
+If you need raw Hydra overrides, source the project environment first and then run the lower-level
+entrypoint with an explicit config path, for example:
 
-```text
-src/aide/
-  core/          # Typed configuration, datamodule, trainer, logging, and base abstractions
-  callbacks/     # Checkpoint callback and artifact upload behavior
-  registry/      # Registries and plugin discovery
-  scaffold/      # Templates and project generator
-  scripts/       # CLI entrypoints: aide, aide init, and aide list
-example/         # Checked-in scaffold example
-pyproject.toml   # Dependencies, uv configuration, and console scripts
+```bash
+set -a
+source .env
+set +a
+python -m aide.scripts.train --config-path ./configs --config-name experiment/default trainer.max_epochs=5
 ```
 
-## Current Scope
+## Scope
 
-AIDE currently provides a local artifact datamodule for PyTorch `Dataset` objects stored in a
-JSON split manifest, plus a CIFAR-10 scaffold example. The framework is extensible through
-plugins, but remote dataset URI handling and production deployment backends are not implemented
-by the current runtime.
+The current scaffold is centered on a local artifact-backed datamodule and a CIFAR-10 example.
+The README stays focused on getting started and understanding the core concepts.
+
+## Further Reading
+
+For deeper implementation details, see the wiki pages in `wikis/`:
+
+- `wikis/Home.md`
+- `wikis/Configuration.md`
+- `wikis/TrainableModel.md`
+- `wikis/TrainerAndCheckpoints.md`
+- `wikis/PluginsAndRegistries.md`
