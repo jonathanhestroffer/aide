@@ -52,5 +52,4 @@ DEFAULT_LAYOUT: tuple[ScaffoldFile, ...] = (
         relative_path="plugins/components/transforms.py",
         template_name="plugins_components_transforms.py",
     ),
-    ScaffoldFile(relative_path="scripts/create_data.py", template_name="scripts_create_data.py"),
 )

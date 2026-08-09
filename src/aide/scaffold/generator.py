@@ -49,6 +49,19 @@ def _write_scaffold_file(
     return True, existed
 
 
+def write_dataset_manifest_uri(base_path: Path, artifact_uri: str) -> None:
+    """Set the generated project's dataset manifest location in its environment file."""
+    env_path = base_path / ".env"
+    lines = env_path.read_text(encoding="utf-8").splitlines()
+    updated_lines = [
+        f"AIDE_DATASET_MANIFEST={artifact_uri}"
+        if line.startswith("AIDE_DATASET_MANIFEST=")
+        else line
+        for line in lines
+    ]
+    env_path.write_text("\n".join(updated_lines) + "\n", encoding="utf-8")
+
+
 def scaffold_experiment(
     experiment_name: str,
     target_dir: str = ".",
