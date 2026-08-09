@@ -44,7 +44,7 @@ def build_callbacks(cfg: ExperimentConfig) -> list:
     callbacks = []
 
     # Add ModelCheckpoint callback
-    ckpt = cfg.infrastructure.checkpoint
+    ckpt = cfg.checkpoint
 
     if ckpt.dirpath is None:
         if HydraConfig.initialized():

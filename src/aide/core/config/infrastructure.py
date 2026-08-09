@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from aide.core.config.checkpoint import CheckpointConfig
-
 
 class InfrastructureConfig(BaseModel):
     """Configuration for ML platform infrastructure concerns."""
@@ -23,10 +21,6 @@ class InfrastructureConfig(BaseModel):
     plugins: list[str] = Field(
         default_factory=list,
         description="List of plugins to load for the ML platform infrastructure.",
-    )
-
-    checkpoint: CheckpointConfig = Field(
-        default_factory=CheckpointConfig, description="The checkpoint configuration."
     )
 
     save_dir: str | None = Field(

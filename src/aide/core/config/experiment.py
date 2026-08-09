@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from aide.core.config.checkpoint import CheckpointConfig
 from aide.core.config.datamodule import DataModuleConfig
 from aide.core.config.infrastructure import InfrastructureConfig
 from aide.core.config.trainable import TrainableConfig
@@ -21,6 +22,10 @@ class ExperimentConfig(BaseModel):
 
     trainer: TrainerConfig = Field(
         default_factory=TrainerConfig, description="The trainer configuration."
+    )
+
+    checkpoint: CheckpointConfig = Field(
+        default_factory=CheckpointConfig, description="The checkpoint configuration."
     )
 
     infrastructure: InfrastructureConfig = Field(

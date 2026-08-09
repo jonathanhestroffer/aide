@@ -6,7 +6,7 @@ defaults:
   - /datamodule: artifact
   - /trainer: default
   - /infrastructure: local
-  - /checkpoint@infrastructure.checkpoint: default
+  - /checkpoint: default
   - _self_
 
 experiment:
