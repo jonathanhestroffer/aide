@@ -1,0 +1,4 @@
+AIDE_PROJECT_ROOT=.
+AIDE_CONFIGS_PATH=./configs
+AIDE_PLUGINS_PATH=./plugins
+AIDE_DATASET_MANIFEST=./data/datasets.json

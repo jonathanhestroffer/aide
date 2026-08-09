@@ -1,0 +1,4 @@
+class_name: scaffold_cnn
+params:
+  num_classes: 10
+  lr: 0.001

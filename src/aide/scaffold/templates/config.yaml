@@ -1,0 +1,10 @@
+# @package _global_
+
+experiment: null
+
+hydra:
+  run:
+    dir: ${oc.env:AIDE_SAVE_DIR,workspace}/hydra_logs/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: ${oc.env:AIDE_SAVE_DIR,workspace}/hydra_logs/sweeps/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}

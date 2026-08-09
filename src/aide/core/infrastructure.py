@@ -1,0 +1,26 @@
+from pydantic import BaseModel, Field
+
+
+class InfrastructureConfig(BaseModel):
+    """Configuration for ML platform infrastructure concerns."""
+
+    backend: str = Field(
+        default="local", description="The backend to use for the ML platform infrastructure."
+    )
+
+    tracking_uri: str | None = Field(
+        default=None, description="The URI for the tracking server (e.g., MLflow)."
+    )
+
+    artifact_uri: str | None = Field(
+        default=None, description="The URI for the artifact storage (e.g., S3, GCS, local path)."
+    )
+
+    plugins: list[str] = Field(
+        default_factory=list,
+        description="List of plugins to load for the ML platform infrastructure.",
+    )
+
+    save_dir: str | None = Field(
+        default=None, description="The directory to save model checkpoints and logs."
+    )

@@ -1,0 +1,17 @@
+artifact_uri: ${oc.env:AIDE_DATASET_MANIFEST}
+transforms:
+  - class_name: scaffold_random_crop
+    params:
+      size: 32
+      padding: 4
+      apply_to: [train]
+  - class_name: scaffold_random_horizontal_flip
+    params:
+      p: 0.5
+      apply_to: [train]
+  - class_name: scaffold_cifar10_normalize
+    params:
+      apply_to: [all]
+batch_size: 64
+pin_memory: true
+persistent_workers: true

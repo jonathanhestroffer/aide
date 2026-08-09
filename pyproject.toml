@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aide"
+version = "0.1.0"
+description = "Starter scaffold for an ML platform with training, inference API, and deployment assets."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+	{ name = "ML Platform Team" }
+]
+dependencies = [
+    "lightning",
+    "mlflow",
+    "pydantic",
+    "torch",
+    "torchvision",
+    "hydra-core",
+	"rich",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[project.optional-dependencies]
+dev = [
+	"docformatter",
+	"pytest",
+	"ruff",
+]
+
+[project.scripts]
+aide = "aide.scripts:main"
+aide-init = "aide.scripts.init:run_aide_init"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["aide*"]
+namespaces = true
+
+[tool.setuptools.package-data]
+aide = ["configs/*.yaml", "configs/**/*.yaml", "scaffold/templates/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+extend-select = ["E501", "W505"]
+
+[tool.docformatter]
+in-place = true
+recursive = true
+wrap-summaries = 100
+wrap-descriptions = 100
+pre-summary-newline = true
+make-summary-multi-line = true
+close-quotes-on-newline = true
