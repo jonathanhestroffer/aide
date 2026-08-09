@@ -51,7 +51,7 @@ def init_command(
         target_dir=target_dir,
         overwrite=overwrite,
     )
-    resolved_artifact_dir = artifact_dir or str(result.base_path / "data")
+    resolved_artifact_dir = artifact_dir or str(Path.cwd())
     manifest_path = create_cifar10_artifacts(resolved_artifact_dir)
     write_dataset_manifest_uri(result.base_path, str(manifest_path))
     _print_scaffold_result(result, str(manifest_path))
@@ -65,7 +65,7 @@ def aide_init_command(
 ) -> int:
     """Create scaffold files directly inside the target directory."""
     result = _scaffold_target_dir(target_dir, overwrite=overwrite)
-    resolved_artifact_dir = artifact_dir or str(result.base_path / "data")
+    resolved_artifact_dir = artifact_dir or str(Path.cwd())
     manifest_path = create_cifar10_artifacts(resolved_artifact_dir)
     write_dataset_manifest_uri(result.base_path, str(manifest_path))
     _print_scaffold_result(result, str(manifest_path))
@@ -90,7 +90,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--artifact-dir",
-        help="Directory that will contain cifar10/manifest.json and the split artifacts",
+        help=(
+            "Directory that will contain cifar10/manifest.json and the split artifacts "
+            "(defaults to the current working directory)"
+        ),
     )
     args = parser.parse_args(argv)
     return init_command(
@@ -117,7 +120,10 @@ def run_aide_init() -> None:
     )
     parser.add_argument(
         "--artifact-dir",
-        help="Directory that will contain cifar10/manifest.json and the split artifacts",
+        help=(
+            "Directory that will contain cifar10/manifest.json and the split artifacts "
+            "(defaults to the current working directory)"
+        ),
     )
     args = parser.parse_args()
     aide_init_command(
