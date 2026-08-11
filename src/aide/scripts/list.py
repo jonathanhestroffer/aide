@@ -50,6 +50,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="List registered model/component/transform keys")
     parser.add_argument(
         "project_path",
+        nargs="?",
+        default=".",
         help="Path to an initialized experiment directory (must contain configs/ and plugins/)",
     )
     parser.add_argument(

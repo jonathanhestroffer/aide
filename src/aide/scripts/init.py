@@ -22,7 +22,7 @@ def _print_scaffold_result(result: ScaffoldResult, manifest_path: str) -> None:
         "\n  cd "
         f"{result.base_path}"
         f"\n  CIFAR-10 manifest: {manifest_path}"
-        "\n  python train.py --experiment=default"
+        "\n  aide train --experiment default"
     )
 
 

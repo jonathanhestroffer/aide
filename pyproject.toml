@@ -39,7 +39,6 @@ dev = [
 
 [project.scripts]
 aide = "aide.scripts:main"
-aide-init = "aide.scripts.init:run_aide_init"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -50,7 +49,7 @@ include = ["aide*"]
 namespaces = true
 
 [tool.setuptools.package-data]
-aide = ["configs/*.yaml", "configs/**/*.yaml", "scaffold/templates/*"]
+aide = ["scaffold/templates/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

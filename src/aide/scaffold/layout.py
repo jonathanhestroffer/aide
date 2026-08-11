@@ -37,7 +37,6 @@ DEFAULT_LAYOUT: tuple[ScaffoldFile, ...] = (
         template_name="config_checkpoint_default.yaml",
     ),
     ScaffoldFile(relative_path=".env", template_name="env"),
-    ScaffoldFile(relative_path="train.py", template_name="train_py"),
     ScaffoldFile(relative_path="plugins/__init__.py", template_name="plugins__init__.py"),
     ScaffoldFile(
         relative_path="plugins/models/__init__.py",

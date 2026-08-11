@@ -4,6 +4,8 @@ import argparse
 import subprocess
 import sys
 
+from aide.core.environment import get_config_path
+
 
 def _normalize_argv(argv: list[str]) -> list[str]:
     """Treat direct Hydra args as the `train` subcommand for convenience."""
@@ -25,10 +27,26 @@ def _normalize_argv(argv: list[str]) -> list[str]:
 
 
 def _run_train(args: list[str]) -> int:
-    command = [sys.executable, "-m", "aide.scripts.train", *args]
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--experiment", required=True)
+
+    parsed, remaining = parser.parse_known_args(args)
+
+    config_path = get_config_path(".env")
+
+    command = [
+        sys.executable,
+        "-m",
+        "aide.scripts.train",
+        f"--config-path={config_path}",
+        f"--config-name=experiment/{parsed.experiment}",
+        *remaining,
+    ]
+
     print(f"Running: {' '.join(command)}")
-    completed = subprocess.run(command)
-    return int(completed.returncode)
+
+    return subprocess.run(command).returncode
 
 
 def main(argv: list[str] | None = None) -> int:
