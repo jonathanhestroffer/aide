@@ -9,7 +9,7 @@ defaults:
   - /checkpoint: default
   - _self_
 
-experiment:
+metadata:
   name: default
   description: scaffold experiment
   tags: [scaffold]
