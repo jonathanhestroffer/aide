@@ -8,12 +8,6 @@ from collections.abc import Iterable
 from pathlib import Path
 from types import ModuleType
 
-# Only the framework's own internal registries — always safe to import.
-FRAMEWORK_PACKAGES = [
-    "aide.models",
-    "aide.components",
-]
-
 
 def discover_and_import(
     user_packages: list[str] | None = None,
@@ -26,9 +20,6 @@ def discover_and_import(
     module under each package (or each file directly) populates registries.
     """
     imported_modules: dict[str, ModuleType] = {}
-
-    # Always pick up the framework's own built-in components.
-    _walk_packages(FRAMEWORK_PACKAGES, imported_modules)
 
     # User-owned packages — can be anywhere on sys.path, no relation to AIDE.
     if user_packages:
@@ -49,6 +40,15 @@ def discover_and_import(
 
 
 def _walk_packages(package_names: list[str], imported_modules: dict[str, ModuleType]) -> None:
+    """Import all modules under the given package names, recursively.
+
+    This is useful for plugin discovery, where we want to ensure that all modules
+    under a package are imported so that any decorators or registration logic is executed.
+
+    Args:
+        package_names (list[str]): List of package names to import.
+        imported_modules (dict[str, ModuleType]): Dictionary to store imported modules.
+    """
     for package_name in package_names:
         try:
             package = importlib.import_module(package_name)
@@ -69,6 +69,12 @@ def _walk_packages(package_names: list[str], imported_modules: dict[str, ModuleT
 
 
 def _walk_python_files(plugin_dir: str, imported_modules: dict[str, ModuleType]) -> None:
+    """Recursively import all Python files under the given directory.
+
+    Args:
+        plugin_dir (str): The directory containing Python files to import.
+        imported_modules (dict[str, ModuleType]): Dictionary to store imported modules.
+    """
     root = Path(plugin_dir).resolve()
     if not root.is_dir():
         return
@@ -88,6 +94,14 @@ def _walk_python_files(plugin_dir: str, imported_modules: dict[str, ModuleType])
 
 
 def _iter_python_files(root: Path) -> Iterable[Path]:
+    """Recursively yield all Python files under the given root directory.
+
+    Args:
+        root (Path): The root directory to search for Python files.
+
+    Yields:
+        Path: Paths to Python files under the root directory.
+    """
     # Import root-level __init__.py first so `plugins.*` names resolve predictably.
     root_init = root / "__init__.py"
     if root_init.is_file():
@@ -103,6 +117,15 @@ def _iter_python_files(root: Path) -> Iterable[Path]:
 
 
 def _module_name_from_root(root: Path, file_path: Path) -> str:
+    """Construct a module name from the root directory and file path.
+
+    Args:
+        root (Path): The root directory.
+        file_path (Path): The file path to convert into a module name.
+
+    Returns:
+        str: The module name corresponding to the file path.
+    """
     relative = file_path.relative_to(root)
     module_parts = list(relative.parts)
     module_parts[-1] = file_path.stem
@@ -117,6 +140,19 @@ def _module_name_from_root(root: Path, file_path: Path) -> str:
 
 
 def _import_from_path(path: str, module_name: str | None = None) -> ModuleType:
+    """Import a module from a given file path.
+
+    Args:
+        path (str): The file path to the Python module.
+        module_name (str | None): The name to assign to the imported module.
+            If None, the file stem is used.
+
+    Returns:
+        ModuleType: The imported module.
+
+    Raises:
+        ImportError: If the module cannot be imported from the given path.
+    """
     file_path = Path(path).resolve()
     import_name = module_name or file_path.stem
     spec = importlib.util.spec_from_file_location(import_name, file_path)
