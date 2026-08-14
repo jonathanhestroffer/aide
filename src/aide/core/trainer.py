@@ -22,6 +22,9 @@ class Trainer:
             experiment_name="ml-platform",
             tracking_uri=infra_config.tracking_uri,
             artifact_location=infra_config.artifact_location,
+            tags={
+                "experiment_name": cfg.metadata.name,
+            },
         )
 
         trainer_kwargs = trainer_config.model_dump(exclude_none=True)
