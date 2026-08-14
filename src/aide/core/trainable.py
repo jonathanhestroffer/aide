@@ -1,49 +1,35 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 import lightning as L
-
-from aide.core.components import Component, Identity
+from lightning.pytorch.utilities.types import STEP_OUTPUT, OptimizerLRScheduler
 
 
 class TrainableModel(L.LightningModule, ABC):
-    """
-    Base class for all trainable models in the ML platform.
-    """
+    """Base class for all trainable models in the ML platform."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.preprocessor: Component = Identity()
-        self.postprocessor: Component = Identity()
+        self.save_hyperparameters()
 
     @abstractmethod
-    def forward(self, *args, **kwargs):
-        """
-        Forward pass of the model. This method should be overridden by subclasses.
-        """
+    def forward(self, *args, **kwargs) -> Any:
+        """Forward pass of the model. This method should be overridden by subclasses."""
         raise NotImplementedError("Forward method must be implemented by subclasses.")
 
     @abstractmethod
-    def training_step(self, *args, **kwargs):
-        """
-        Training step of the model. This method should be overridden by subclasses.
-        """
+    def training_step(self, *args, **kwargs) -> STEP_OUTPUT:
+        """Training step of the model. This method should be overridden by subclasses."""
         raise NotImplementedError("Training step must be implemented by subclasses.")
 
-    def validation_step(self, *args, **kwargs):
-        """
-        Validation step of the model. This method should be overridden by subclasses.
-        """
-        pass
-
-    def predict_step(self, *args, **kwargs):
-        """
-        Prediction step of the model. This method should be overridden by subclasses.
-        """
-        pass
-
     @abstractmethod
-    def configure_optimizers(self, *args, **kwargs):
-        """
-        Configure the optimizers for the model. This method should be overridden by subclasses.
+    def configure_optimizers(self, *args, **kwargs) -> OptimizerLRScheduler:
+        """Configure the optimizers for the model.
+
+        This method should be overridden by subclasses.
         """
         raise NotImplementedError("Configure optimizers method must be implemented by subclasses.")
+
+    def validation_step(self, *args, **kwargs) -> Any:
+        """Validation step of the model. This method should be overridden by subclasses."""
+        pass
