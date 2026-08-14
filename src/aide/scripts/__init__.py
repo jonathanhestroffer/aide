@@ -9,6 +9,7 @@ from aide.core.environment import get_config_path
 
 def _normalize_argv(argv: list[str]) -> list[str]:
     """Treat direct Hydra args as the `train` subcommand for convenience."""
+
     if len(argv) <= 1:
         return argv
 
@@ -26,12 +27,8 @@ def _normalize_argv(argv: list[str]) -> list[str]:
     return [argv[0], "train", *argv[1:]]
 
 
-def _run_train(args: list[str]) -> int:
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--experiment", required=True)
-
-    parsed, remaining = parser.parse_known_args(args)
+def _run_train(experiment: str, remaining_args: list[str]) -> int:
+    """Run the `train` subcommand with the given experiment and remaining args."""
 
     config_path = get_config_path(".env")
 
@@ -40,8 +37,8 @@ def _run_train(args: list[str]) -> int:
         "-m",
         "aide.scripts.train",
         f"--config-path={config_path}",
-        f"--config-name=experiment/{parsed.experiment}",
-        *remaining,
+        f"--config-name=experiment/{experiment}",
+        *remaining_args,
     ]
 
     print(f"Running: {' '.join(command)}")
@@ -54,12 +51,65 @@ def main(argv: list[str] | None = None) -> int:
     normalized = _normalize_argv(raw_argv)
 
     parser = argparse.ArgumentParser(description="CLI for running AIDE workflows")
-    parser.add_argument("command", nargs="?", choices=["train", "init", "list"])
-    parser.add_argument("args", nargs=argparse.REMAINDER)
+    subparsers = parser.add_subparsers(dest="command")
+
+    #
+    # Subcommand: train
+    #
+    train_parser = subparsers.add_parser(
+        "train",
+        help="Run an AIDE experiment",
+        description=(
+            "Run an AIDE experiment by selecting a scaffolded Hydra experiment configuration."
+        ),
+    )
+
+    train_parser.add_argument(
+        "--experiment",
+        required=True,
+        help="Experiment name to run.",
+    )
+
+    train_parser.add_argument(
+        "args",
+        nargs=argparse.REMAINDER,
+        help="Additional Hydra arguments to pass through to the training runtime.",
+    )
+
+    #
+    # Subcommand: init
+    #
+    init_parser = subparsers.add_parser(
+        "init",
+        help="Create a new experiment scaffold",
+        description="Create a new AIDE experiment scaffold in the target directory.",
+    )
+
+    init_parser.add_argument(
+        "args",
+        nargs=argparse.REMAINDER,
+        help="Arguments forwarded to the init command.",
+    )
+
+    #
+    # Subcommand: list
+    #
+    list_parser = subparsers.add_parser(
+        "list",
+        help="List registered registry entries",
+        description="List registered models, components, or transforms for the current project.",
+    )
+
+    list_parser.add_argument(
+        "args",
+        nargs=argparse.REMAINDER,
+        help="Arguments forwarded to the list command.",
+    )
+
     parsed = parser.parse_args(normalized[1:])
 
     if parsed.command == "train":
-        return _run_train(parsed.args)
+        return _run_train(parsed.experiment, parsed.args)
 
     if parsed.command == "init":
         from aide.scripts.init import main as init_main
