@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any
 
+import torch
 from lightning.pytorch.loggers import MLFlowLogger
+from lightning.pytorch.utilities import rank_zero_only
 
 
 class MLFlowLoggerAdapter(MLFlowLogger):
@@ -14,78 +18,97 @@ class MLFlowLoggerAdapter(MLFlowLogger):
             raise RuntimeError("MLflow run_id is not available yet. Start a training run first.")
         return active_run_id
 
-    def log_param(self, key: str, value: Any, run_id: str | None = None) -> None:
-        self.experiment.log_param(
-            run_id=self._resolve_run_id(run_id),
-            key=key,
-            value=value,
-        )
-
-    def log_params(self, params: dict[str, Any], run_id: str | None = None) -> None:
-        self.experiment.log_params(
-            run_id=self._resolve_run_id(run_id),
-            params=params,
-        )
-
-    def log_metric(
-        self,
-        key: str,
-        value: float,
-        step: int | None = None,
-        run_id: str | None = None,
-    ) -> None:
-        self.experiment.log_metric(
-            run_id=self._resolve_run_id(run_id),
-            key=key,
-            value=value,
-            step=step,
-        )
-
+    @rank_zero_only
     def log_artifact(
         self,
         local_path: str,
         artifact_path: str | None = None,
         run_id: str | None = None,
     ) -> None:
+        """Log a single artifact to MLflow."""
+
         self.experiment.log_artifact(
             run_id=self._resolve_run_id(run_id),
             local_path=local_path,
             artifact_path=artifact_path,
         )
 
+    @rank_zero_only
     def log_artifacts(
         self,
         local_dir: str,
         artifact_path: str | None = None,
         run_id: str | None = None,
     ) -> None:
+        """Log multiple artifacts from a directory to MLflow."""
+
         self.experiment.log_artifacts(
             run_id=self._resolve_run_id(run_id),
             local_dir=local_dir,
             artifact_path=artifact_path,
         )
 
+    @rank_zero_only
     def log_dict(
         self,
         dictionary: dict[str, Any],
         artifact_file: str,
         run_id: str | None = None,
     ) -> None:
+        """Log a dictionary as a JSON artifact to MLflow."""
+
         self.experiment.log_dict(
             run_id=self._resolve_run_id(run_id),
             dictionary=dictionary,
             artifact_file=artifact_file,
         )
 
-    def set_tag(self, key: str, value: Any, run_id: str | None = None) -> None:
-        self.experiment.set_tag(
-            run_id=self._resolve_run_id(run_id),
-            key=key,
-            value=value,
-        )
+    @rank_zero_only
+    def log_tensor(
+        self,
+        tensor: torch.Tensor,
+        artifact_file: str,
+        artifact_path: str | None = None,
+        run_id: str | None = None,
+    ) -> None:
+        """Save a tensor as a PyTorch artifact and log it to MLflow."""
 
-    def set_tags(self, tags: dict[str, Any], run_id: str | None = None) -> None:
-        self.experiment.set_tags(
-            run_id=self._resolve_run_id(run_id),
-            tags=tags,
-        )
+        with TemporaryDirectory() as tmp_dir:
+            file_path = Path(tmp_dir) / artifact_file
+
+            torch.save(
+                tensor.detach().cpu(),
+                file_path,
+            )
+
+            self.log_artifact(
+                local_path=str(file_path),
+                artifact_path=artifact_path,
+                run_id=run_id,
+            )
+
+    @rank_zero_only
+    def log_tensors(
+        self,
+        tensors: dict[str, torch.Tensor],
+        artifact_file: str,
+        artifact_path: str | None = None,
+        run_id: str | None = None,
+    ) -> None:
+        """Save multiple tensors as a single PyTorch artifact and log it to MLflow."""
+
+        tensors_cpu = {name: tensor.detach().cpu() for name, tensor in tensors.items()}
+
+        with TemporaryDirectory() as tmp_dir:
+            file_path = Path(tmp_dir) / artifact_file
+
+            torch.save(
+                tensors_cpu,
+                file_path,
+            )
+
+            self.log_artifact(
+                local_path=str(file_path),
+                artifact_path=artifact_path,
+                run_id=run_id,
+            )
