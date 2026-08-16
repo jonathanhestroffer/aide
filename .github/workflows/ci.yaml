@@ -34,4 +34,4 @@ jobs:
         run: docker build -f docker/Dockerfile -t aide:test .
 
       - name: Run Integration Tests
-        run: docker run --rm aide:test uv run --no-sync pytest tests/integration
+        run: docker run --rm aide:test uv run --no-sync pytest -p no:cacheprovider tests/integration
