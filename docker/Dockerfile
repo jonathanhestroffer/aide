@@ -10,6 +10,7 @@ RUN uv sync --frozen --no-install-project
 
 COPY src ./src
 COPY tests ./tests
+RUN chmod -R 777 /app
 
 RUN uv sync --frozen --no-editable
 
