@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from aide.scaffold.dataset import create_cifar10_artifacts
+from aide.scaffold.dataset import create_procedural_shapes_artifacts
 from aide.scaffold.generator import ScaffoldResult, scaffold_experiment, write_dataset_manifest_uri
 
 
@@ -23,13 +23,12 @@ def _print_scaffold_result(result: ScaffoldResult, manifest_path: str) -> None:
         "\nDone. Next steps:"
         "\n  cd "
         f"{result.base_path}"
-        f"\n  CIFAR-10 manifest: {manifest_path}"
+        f"\n  Procedural shapes manifest: {manifest_path}"
         "\n  aide train --experiment default"
     )
 
 
 def aide_init_command(
-    experiment_name: str,
     target_dir: str = ".",
     overwrite: bool = False,
     artifact_dir: str | None = None,
@@ -47,12 +46,11 @@ def aide_init_command(
         int: Exit code (0 for success).
     """
     result = scaffold_experiment(
-        experiment_name=experiment_name,
         target_dir=target_dir,
         overwrite=overwrite,
     )
     resolved_artifact_dir = artifact_dir or str(Path.cwd())
-    manifest_path = create_cifar10_artifacts(resolved_artifact_dir)
+    manifest_path = create_procedural_shapes_artifacts(resolved_artifact_dir)
     write_dataset_manifest_uri(result.base_path, str(manifest_path))
     _print_scaffold_result(result, str(manifest_path))
     return 0
@@ -62,13 +60,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Initialize an AIDE experiment scaffold")
 
     parser.add_argument(
-        "experiment_name",
-        help="Experiment directory name to create (contains configs/ and plugins/)",
-    )
-
-    parser.add_argument(
-        "--target-dir",
-        default=".",
+        "target_dir",
+        metavar="<target_dir>",
         help="Parent directory where the experiment directory is created",
     )
 
@@ -89,7 +82,6 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     return aide_init_command(
-        args.experiment_name,
         target_dir=args.target_dir,
         overwrite=args.overwrite,
         artifact_dir=args.artifact_dir,
@@ -124,7 +116,6 @@ def run_aide_init() -> None:
     args = parser.parse_args()
 
     aide_init_command(
-        experiment_name="default",
         target_dir=args.target_dir,
         overwrite=args.overwrite,
         artifact_dir=args.artifact_dir,

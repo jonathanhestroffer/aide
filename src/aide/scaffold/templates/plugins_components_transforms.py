@@ -88,7 +88,7 @@ class NormalizeToUnitRange(_SplitAwareTransform):
 
 @TransformRegistry.register("scaffold_random_crop")
 class RandomCrop(_SplitAwareTransform):
-    """Random crop with optional padding for CIFAR-10 training augmentation."""
+    """Random crop with optional padding for training augmentation."""
 
     def __init__(
         self,
@@ -115,45 +115,3 @@ class RandomCrop(_SplitAwareTransform):
         top = int(torch.randint(0, height - self.size + 1, (1,)).item())
         left = int(torch.randint(0, width - self.size + 1, (1,)).item())
         return TF.crop(image, top, left, self.size, self.size)
-
-
-@TransformRegistry.register("scaffold_random_horizontal_flip")
-class RandomHorizontalFlip(_SplitAwareTransform):
-    """Random horizontal flip for CIFAR-10 training augmentation."""
-
-    def __init__(
-        self,
-        *,
-        p: float = 0.5,
-        apply_to: list[str] | None = None,
-    ) -> None:
-        super().__init__(apply_to=apply_to or ["train"])
-        self.p = p
-
-    def _transform_image(self, image: torch.Tensor) -> torch.Tensor:
-        if not isinstance(image, torch.Tensor):
-            raise TypeError(f"Expected image tensor, got: {type(image).__name__}")
-
-        if torch.rand(1).item() < self.p:
-            return TF.hflip(image)
-        return image
-
-
-@TransformRegistry.register("scaffold_cifar10_normalize")
-class NormalizeWithCifarStats(_SplitAwareTransform):
-    """Normalize CIFAR-like tensors with channel-wise mean and std."""
-
-    def __init__(
-        self,
-        *,
-        mean: list[float] | tuple[float, float, float] = (0.4914, 0.4822, 0.4465),
-        std: list[float] | tuple[float, float, float] = (0.2470, 0.2435, 0.2616),
-        apply_to: list[str] | None = None,
-    ) -> None:
-        super().__init__(apply_to=apply_to or ["all"])
-        self.mean = [float(x) for x in mean]
-        self.std = [float(x) for x in std]
-
-    def _transform_image(self, image: torch.Tensor) -> torch.Tensor:
-        image = image if image.is_floating_point() else image.float().div(255.0)
-        return TF.normalize(image, mean=self.mean, std=self.std)

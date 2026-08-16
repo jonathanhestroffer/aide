@@ -2,9 +2,7 @@
 .venv
 .vscode
 artifacts/
-workspace/
 *egg-info
 .ipynb*
-outputs/
-example/
-cifar10/
+*/*.pt
+*/*.json

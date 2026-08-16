@@ -15,9 +15,9 @@ def _normalize_argv(argv: list[str]) -> list[str]:
 
     first = argv[1]
     known = {
-        "train",
         "init",
         "list",
+        "train",
         "--help",
         "-h",
     }
@@ -87,8 +87,9 @@ def main(argv: list[str] | None = None) -> int:
 
     init_parser.add_argument(
         "args",
+        metavar="<target-dir>",
         nargs=argparse.REMAINDER,
-        help="Arguments forwarded to the init command.",
+        help="Target directory for the new experiment scaffold.",
     )
 
     #

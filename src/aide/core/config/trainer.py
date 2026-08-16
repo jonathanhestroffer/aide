@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -22,4 +24,9 @@ class TrainerConfig(BaseModel):
 
     precision: str | None = Field(
         default=None, description="Precision to use for training (e.g., '16', '32', 'bf16')."
+    )
+
+    deterministic: bool | Literal["warn"] | None = Field(
+        default=False,
+        description="Whether to enable deterministic training for reproducibility.",
     )

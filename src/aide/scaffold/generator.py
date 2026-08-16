@@ -24,16 +24,10 @@ def _read_template(template_name: str) -> str:
     return template_path.read_text(encoding="utf-8")
 
 
-def _render_template(template: str, *, experiment_name: str) -> str:
-    # Use explicit token replacement to avoid clobbering braces used by Hydra and Python.
-    return template.replace("{{experiment_name}}", experiment_name)
-
-
 def _write_scaffold_file(
     base_path: Path,
     file_spec: ScaffoldFile,
     *,
-    experiment_name: str,
     overwrite: bool = False,
 ) -> tuple[bool, bool]:
     full_path = base_path / file_spec.relative_path
@@ -44,8 +38,7 @@ def _write_scaffold_file(
         return False, True
 
     template = _read_template(file_spec.template_name)
-    rendered = _render_template(template, experiment_name=experiment_name)
-    full_path.write_text(rendered, encoding="utf-8")
+    full_path.write_text(template, encoding="utf-8")
     return True, existed
 
 
@@ -63,16 +56,12 @@ def write_dataset_manifest_uri(base_path: Path, artifact_uri: str) -> None:
 
 
 def scaffold_experiment(
-    experiment_name: str,
-    target_dir: str = ".",
+    target_dir: str,
     overwrite: bool = False,
 ) -> ScaffoldResult:
     """Create an experiment scaffold, optionally overwriting existing generated files."""
     root = Path(target_dir).resolve()
     root.mkdir(parents=True, exist_ok=True)
-
-    base_path = root / experiment_name
-    base_path.mkdir(parents=True, exist_ok=True)
 
     created: list[str] = []
     overwritten: list[str] = []
@@ -80,21 +69,20 @@ def scaffold_experiment(
 
     for file_spec in DEFAULT_LAYOUT:
         did_write, existed = _write_scaffold_file(
-            base_path,
+            root,
             file_spec,
-            experiment_name=experiment_name,
             overwrite=overwrite,
         )
         if did_write:
             if existed:
-                overwritten.append(file_spec.relative_path)
+                overwritten.append(str(file_spec.relative_path))
             else:
-                created.append(file_spec.relative_path)
+                created.append(str(file_spec.relative_path))
         else:
-            skipped.append(file_spec.relative_path)
+            skipped.append(str(file_spec.relative_path))
 
     return ScaffoldResult(
-        base_path=base_path,
+        base_path=root,
         created=tuple(created),
         overwritten=tuple(overwritten),
         skipped=tuple(skipped),

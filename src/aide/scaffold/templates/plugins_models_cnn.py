@@ -41,7 +41,7 @@ class Classifier(nn.Module):
 class ScaffoldCNN(TrainableModel):
     """Small CNN used by the generated scaffold example."""
 
-    def __init__(self, in_channels: int = 3, num_classes: int = 10, lr: float = 1e-3) -> None:
+    def __init__(self, in_channels: int = 3, num_classes: int = 3, lr: float = 1e-3) -> None:
         super().__init__()
 
         self.net = nn.Sequential(
@@ -98,16 +98,4 @@ class ScaffoldCNN(TrainableModel):
         return loss
 
     def configure_optimizers(self) -> OptimizerLRScheduler:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="min", factor=0.3, patience=5, min_lr=1e-6
-        )
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "monitor": "val_loss",
-                "interval": "epoch",
-                "frequency": 1,
-            },
-        }
+        return torch.optim.AdamW(params=self.parameters(), lr=self.lr)

@@ -11,11 +11,10 @@ from aide.scaffold.layout import DEFAULT_LAYOUT
 
 def test_scaffold_experiment_creates_project(tmp_path: Path):
     result = scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
     )
 
-    expected_base = tmp_path / "my_experiment"
+    expected_base = tmp_path
 
     assert result.base_path == expected_base
     assert expected_base.is_dir()
@@ -32,7 +31,6 @@ def test_scaffold_experiment_creates_project(tmp_path: Path):
 
 def test_scaffold_experiment_creates_nested_directories(tmp_path: Path):
     result = scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
     )
 
@@ -52,12 +50,10 @@ def test_scaffold_experiment_creates_nested_directories(tmp_path: Path):
 
 def test_scaffold_experiment_second_run_skips_existing_files(tmp_path: Path):
     first = scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
     )
 
     second = scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
     )
 
@@ -70,11 +66,10 @@ def test_scaffold_experiment_second_run_skips_existing_files(tmp_path: Path):
 
 def test_scaffold_experiment_overwrites_existing_files(tmp_path: Path):
     _ = scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
     )
 
-    config_path = tmp_path / "my_experiment" / "configs" / "experiment" / "default.yaml"
+    config_path = tmp_path / "configs" / "experiment" / "default.yaml"
 
     original_contents = config_path.read_text(encoding="utf-8")
 
@@ -84,7 +79,6 @@ def test_scaffold_experiment_overwrites_existing_files(tmp_path: Path):
     )
 
     second = scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
         overwrite=True,
     )
@@ -100,7 +94,6 @@ def test_scaffold_experiment_overwrites_existing_files(tmp_path: Path):
 
 def test_scaffold_experiment_preserves_unmanaged_files(tmp_path: Path):
     first = scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
     )
 
@@ -111,7 +104,6 @@ def test_scaffold_experiment_preserves_unmanaged_files(tmp_path: Path):
     )
 
     scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
         overwrite=True,
     )
@@ -122,7 +114,6 @@ def test_scaffold_experiment_preserves_unmanaged_files(tmp_path: Path):
 
 def test_scaffold_result_is_immutable(tmp_path: Path):
     result = scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
     )
 
@@ -132,18 +123,17 @@ def test_scaffold_result_is_immutable(tmp_path: Path):
 
 def test_write_dataset_manifest_uri(tmp_path: Path):
     scaffold_experiment(
-        experiment_name="my_experiment",
         target_dir=str(tmp_path),
     )
 
-    base_path = tmp_path / "my_experiment"
+    base_path = tmp_path
 
     write_dataset_manifest_uri(
         base_path,
-        "/shared/datasets/cifar10/manifest.json",
+        "/shared/datasets/procedural_shapes/manifest.json",
     )
 
     env_path = base_path / ".env"
     contents = env_path.read_text(encoding="utf-8")
 
-    assert ("AIDE_DATASET_MANIFEST=/shared/datasets/cifar10/manifest.json") in contents
+    assert ("AIDE_DATASET_MANIFEST=/shared/datasets/procedural_shapes/manifest.json") in contents

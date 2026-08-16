@@ -1,5 +1,5 @@
 class_name: scaffold_cnn
 params:
   in_channels: 3
-  num_classes: 10
-  lr: 0.001
+  num_classes: 3
+  lr: 1e-3

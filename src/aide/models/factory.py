@@ -27,3 +27,17 @@ def build_trainable_model(config: TrainableConfig) -> TrainableModel:
         model.postprocessor = build_component(postprocessor_cfg)
 
     return model
+
+
+def load_trainable_model(model: TrainableModel, checkpoint_path: str) -> TrainableModel:
+    """
+    Load a trainable model from a checkpoint.
+
+    Args:
+        model (TrainableModel): The model instance to load the checkpoint into.
+        checkpoint_path (str): The path to the checkpoint file.
+
+    Returns:
+        TrainableModel: The model instance with loaded weights.
+    """
+    return model.load_from_checkpoint(checkpoint_path)
