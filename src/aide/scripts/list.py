@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from aide.registry.registries import ComponentRegistry, ModelRegistry, TransformRegistry
+from aide.registry.registries import DatasetRegistry, ModelRegistry, TransformRegistry
 from aide.utils.plugins import load_plugins
 
 
@@ -29,12 +29,12 @@ def list_registry(project_path: str, kind: str = "all") -> int:
     normalized = kind.strip().lower()
     registries: dict[str, list[str]] = {
         "models": ModelRegistry.keys(),
-        "components": ComponentRegistry.keys(),
+        "datasets": DatasetRegistry.keys(),
         "transforms": TransformRegistry.keys(),
     }
 
     if normalized == "all":
-        for registry_name in ("models", "components", "transforms"):
+        for registry_name in ("models", "datasets", "transforms"):
             _print_registry(registry_name, registries[registry_name])
         return 0
 
@@ -58,7 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         "--kind",
         "-k",
         default="all",
-        help="Registry to list: all, models, components, transforms",
+        help="Registry to list: all, models, datasets, transforms",
     )
     args = parser.parse_args(argv)
     return list_registry(args.project_path, kind=args.kind)
