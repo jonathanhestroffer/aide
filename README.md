@@ -107,7 +107,7 @@ example/
 By default, `aide init` uses the current working directory as the shared artifact location and points `AIDE_DATASET_MANIFEST` at:
 
 ```text
-./cifar10/manifest.json
+./data/datasets.json
 ```
 
 If multiple projects should share a different dataset location, pass `--artifact-dir`:
@@ -301,20 +301,20 @@ AIDE_ARTIFACT_LOCATION
 AIDE_SAVE_DIR
 ```
 
-The example project uses CIFAR-10 as a reference workload. The dataset and model are intentionally simple; the purpose of the example is to demonstrate AIDE's project structure, configuration system, plugin architecture, training runtime, and artifact lifecycle rather than model performance.
+The example project uses a procedural shapes dataset as a reference workload. The dataset and model are intentionally simple; the purpose of the example is to demonstrate AIDE's project structure, configuration system, plugin architecture, training runtime, and artifact lifecycle rather than model performance.
 
 ## Commands
 
 Initialize a project:
 
 ```bash
-aide init <experiment-name> [--artifact-dir <dir>]
+aide init <experiment-name>
 ```
 
 List available project extensions:
 
 ```bash
-aide list <project-path> [--kind models|components|transforms]
+aide list <project-path> [--kind models|datasets|transforms]
 ```
 
 Run an experiment:
@@ -329,7 +329,7 @@ For a scaffolded project, run the experiment from the project root:
 aide train --experiment default
 ```
 
-This command loads the project's `.env`, resolves `AIDE_CONFIGS_PATH`, discovers local plugins, and uses the project's `configs/` directory automatically.
+This command loads the project's `.env`, resolves `AIDE_CONFIGS_PATH`/`AIDE_PLUGINS_PATH`, discovers local plugins, and uses the project's `configs/` directory automatically.
 
 For raw Hydra overrides or direct access to the lower-level training entrypoint, source the project environment and provide an explicit config path:
 
@@ -359,7 +359,7 @@ example/
 │   ├── model/
 │   └── trainer/
 └── plugins/
-    ├── components/
+    ├── data/
     └── models/
 ```
 
@@ -400,7 +400,7 @@ The current implementation is intentionally focused on the development and exper
 
 ## Scope
 
-The current reference implementation is centered on a local artifact-backed datamodule and a CIFAR-10 example.
+The current reference implementation is centered on a local artifact-backed datamodule and a procedural shapes example.
 
 The example is intended to demonstrate the framework architecture rather than provide a production-scale ML workload. The important parts of the example are the standardized project structure, configuration composition, plugin system, training runtime, experiment tracking, and artifact management.
 

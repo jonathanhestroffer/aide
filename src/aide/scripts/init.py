@@ -23,7 +23,6 @@ def _print_scaffold_result(result: ScaffoldResult) -> None:
 def aide_init_command(
     target_dir: str = ".",
     overwrite: bool = False,
-    artifact_dir: str | None = None,
 ) -> int:
     """Create an experiment scaffold with sibling configs and plugins directories.
 
@@ -60,54 +59,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Overwrite generated scaffold files that already exist",
     )
 
-    parser.add_argument(
-        "--artifact-dir",
-        help=(
-            "Directory that will contain cifar10/manifest.json and the split artifacts "
-            "(defaults to the current working directory)"
-        ),
-    )
-
     args = parser.parse_args(argv)
 
     return aide_init_command(
         target_dir=args.target_dir,
         overwrite=args.overwrite,
-        artifact_dir=args.artifact_dir,
-    )
-
-
-def run_aide_init() -> None:
-    """Console entrypoint for the standalone mlp-init command."""
-    parser = argparse.ArgumentParser(description="Create scaffold files in a target directory")
-
-    parser.add_argument(
-        "target_dir",
-        nargs="?",
-        default=".",
-        help="Directory where scaffold files should be created",
-    )
-
-    parser.add_argument(
-        "--overwrite",
-        action="store_true",
-        help="Overwrite generated scaffold files that already exist",
-    )
-
-    parser.add_argument(
-        "--artifact-dir",
-        help=(
-            "Directory that will contain cifar10/manifest.json and the split artifacts "
-            "(defaults to the current working directory)"
-        ),
-    )
-
-    args = parser.parse_args()
-
-    aide_init_command(
-        target_dir=args.target_dir,
-        overwrite=args.overwrite,
-        artifact_dir=args.artifact_dir,
     )
 
 

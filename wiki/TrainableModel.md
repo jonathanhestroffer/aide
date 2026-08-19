@@ -32,16 +32,9 @@ The relationship is:
     Project model
 ```
 
-AIDE adds two optional pipeline components:
+AIDE keeps the model contract lightweight: `TrainableModel` is a thin wrapper around Lightning's `LightningModule` with registry-based discovery and configuration-driven construction.
 
-* `self.preprocessor`
-* `self.postprocessor`
-
-Both default to identity components.
-
-The model factory can replace these with configured components before training begins.
-
-This allows a model to remain focused on task-specific behavior while preprocessing and postprocessing can be selected independently through configuration.
+A model implementation should focus on task-specific behavior and may implement any preprocessing or output logic directly as part of its own forward pass.
 
 ---
 
@@ -97,11 +90,8 @@ class MyModel(TrainableModel):
         ...
 
     def forward(self, x):
-        x = self.preprocessor(x)
-
         output = ...
-
-        return self.postprocessor(output)
+        return output
 
     def training_step(self, batch, batch_idx): ...
 
@@ -111,40 +101,6 @@ class MyModel(TrainableModel):
 The important point is that the model remains a normal Lightning model.
 
 The registry decorator makes it discoverable by AIDE, while `TrainableModel` provides the common contract.
-
----
-
-## The Configurable Model Pipeline
-
-AIDE allows the model pipeline to be decomposed into three stages:
-
-```text id="k5t4xb"
-Input
-  │
-  ▼
-┌─────────────────┐
-│  Preprocessor   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│      Model      │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Postprocessor  │
-└────────┬────────┘
-         │
-         ▼
-      Output
-```
-
-The preprocessor and postprocessor default to identity operations, so a model does not need to configure them.
-
-When configured, AIDE constructs them through `ComponentRegistry`.
-
-This allows behavior such as preprocessing or output decoding to be changed without creating a new model class for every combination.
 
 ---
 
@@ -185,46 +141,6 @@ trainable.model.params
 The value of `class_name` is a registry key, not a Python import path.
 
 This keeps model selection independent from the physical location of the implementation.
-
----
-
-## Configured Components
-
-The same model configuration can optionally specify components.
-
-Conceptually:
-
-```yaml id="4qjzfr"
-trainable:
-  model:
-    class_name: scaffold_cnn
-    params:
-      num_classes: 10
-
-  preprocessor:
-    class_name: my_preprocessor
-    params:
-      ...
-
-  postprocessor:
-    class_name: my_postprocessor
-    params:
-      ...
-```
-
-AIDE resolves the model through `ModelRegistry` and the components through `ComponentRegistry`.
-
-The resulting runtime object therefore becomes:
-
-```text id="0r8q1j"
-             TrainableModel
-                    │
-        ┌───────────┼───────────┐
-        ▼           ▼           ▼
- Preprocessor     Model    Postprocessor
-```
-
-This separation is useful when the same preprocessing or postprocessing behavior should be reused by multiple models.
 
 ---
 
@@ -280,13 +196,7 @@ Transform
 Datamodule
    │
    ▼
-Preprocessor
-   │
-   ▼
 TrainableModel
-   │
-   ▼
-Postprocessor
    │
    ▼
 Prediction
@@ -494,7 +404,6 @@ AIDE supplies:
 
 * registry-based discovery
 * configuration-driven construction
-* optional model pipeline components
 * common training infrastructure
 * integration with experiment tracking and artifacts
 
