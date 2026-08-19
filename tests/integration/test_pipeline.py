@@ -1,6 +1,8 @@
 import subprocess
 from pathlib import Path
 
+import mlflow
+
 
 def test_init_and_train_workflow(tmp_path: Path):
     # define target directory in a temporary location
@@ -39,3 +41,9 @@ def test_init_and_train_workflow(tmp_path: Path):
     # verify that the MLflow tracking database was created
     mlflow_tracking_uri = project_dir / "workspace" / "metadata" / "mlflow.db"
     assert mlflow_tracking_uri.exists(), "MLflow tracking database was not created"
+
+    # verify that the MLflow run was logged
+    # and model achieved
+    runs = mlflow.search_runs(
+        experiment_names=["default"],
+    )

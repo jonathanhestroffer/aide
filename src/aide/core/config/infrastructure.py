@@ -18,11 +18,6 @@ class InfrastructureConfig(BaseModel):
         default=None, description="The URI for the artifact storage (e.g., S3, GCS, local path)."
     )
 
-    plugins: list[str] = Field(
-        default_factory=list,
-        description="List of plugins to load for the ML platform infrastructure.",
-    )
-
     save_dir: str | None = Field(
         default=None, description="The directory to save model checkpoints and logs."
     )

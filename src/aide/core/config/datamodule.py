@@ -3,33 +3,40 @@ from __future__ import annotations
 from pydantic import BaseModel, Field, field_validator
 
 from aide.core.config.component import ComponentConfig
+from aide.core.config.dataloader import DataLoaderConfig
 
 
 class DataModuleConfig(BaseModel):
     """Configuration for the PyTorch Lightning DataModule."""
 
-    artifact_uri: str = Field(
-        default="data", description="The URI for the data artifacts (e.g., S3, GCS, local path)."
+    train_dataset: ComponentConfig = Field(
+        default=..., description="The configuration for the training dataset."
+    )
+
+    val_dataset: ComponentConfig = Field(
+        default=..., description="The configuration for the validation dataset."
+    )
+
+    test_dataset: ComponentConfig | None = Field(
+        default=None, description="The configuration for the test dataset."
     )
 
     transforms: list[ComponentConfig] | None = Field(
         default_factory=list, description="List of transform component configurations."
     )
 
-    batch_size: int = Field(default=32, description="The batch size for the DataLoader.")
-
-    num_workers: int | None = Field(
-        default=None,
-        description=(
-            "The number of worker processes for the DataLoader. "
-            "If omitted, defaults to the number of CPUs on the machine."
-        ),
+    global_dataloader: DataLoaderConfig = Field(
+        default_factory=DataLoaderConfig, description="The global DataLoader configuration."
     )
 
-    pin_memory: bool = Field(default=True, description="Whether to pin memory in the DataLoader.")
-
-    persistent_workers: bool = Field(
-        default=True, description="Whether to use persistent workers in the DataLoader."
+    train_dataloader: DataLoaderConfig | None = Field(
+        default=None, description="The DataLoader configuration for the training dataset."
+    )
+    val_dataloader: DataLoaderConfig | None = Field(
+        default=None, description="The DataLoader configuration for the validation dataset."
+    )
+    test_dataloader: DataLoaderConfig | None = Field(
+        default=None, description="The DataLoader configuration for the test dataset."
     )
 
     @field_validator("transforms", mode="before")

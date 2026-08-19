@@ -4,42 +4,29 @@ from collections.abc import Callable, Iterator
 from typing import Generic, TypeVar
 
 T = TypeVar("T")
+R = TypeVar("R")  # Method-level TypeVar to preserve decorated object types
 
 
 class Registry(Generic[T]):
-    """Generic key ->  object registry with decorator-based registration."""
+    """Generic key -> object registry with decorator-based registration."""
 
     def __init__(
         self,
         name: str,
         *,
         allow_override: bool = False,
-        validator: Callable[[str, T], None] | None = None,
+        expected_type: type | None = None,
     ) -> None:
-        """
-        Args:
-            name: Name of the registry, used in error messages.
-            allow_override: If True, allow overriding existing keys.
-            expected_type: Optional runtime type check for registered objects.
-            validator: Optional registry-specific validation hook.
-        """
         self.name = name
         self.allow_override = allow_override
-        self.validator = validator
+        self.expected_type = expected_type
         self._objects: dict[str, T] = {}
 
-    def register(self, key: str) -> Callable[[T], T]:
-        """Register an object under ``key`` and return it unchanged.
+    def register(self, key: str) -> Callable[[R], R]:
+        """Register an object under ``key`` and return it unchanged."""
 
-        This allows usage as:
-
-        @registry.register("my_key")
-        class MyObject:
-                ...
-        """
-
-        def decorator(obj: T) -> T:
-            self.add(key, obj)
+        def decorator(obj: R) -> R:
+            self.add(key, obj)  # type: ignore[arg-type]
             return obj
 
         return decorator
@@ -49,8 +36,20 @@ class Registry(Generic[T]):
         if not key:
             raise ValueError(f"Registry '{self.name}' keys must be non-empty")
 
-        if self.validator is not None:
-            self.validator(key, obj)
+        if self.expected_type is not None:
+            # Handle class registration (issubclass) vs instance registration (isinstance)
+            is_valid = (
+                issubclass(obj, self.expected_type)
+                if isinstance(obj, type) and isinstance(self.expected_type, type)
+                else isinstance(obj, self.expected_type)
+            )
+            if not is_valid:
+                raise TypeError(
+                    f"Object registered under key '{key}' in registry '{self.name}' "
+                    f"must be or inherit from "
+                    f"{self.expected_type.__module__}.{self.expected_type.__name__}. "
+                    f"Got: {type(obj).__module__}.{type(obj).__name__}"
+                )
 
         if key in self._objects and not self.allow_override:
             raise KeyError(

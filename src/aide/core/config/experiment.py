@@ -3,9 +3,9 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from aide.core.config.checkpoint import CheckpointConfig
+from aide.core.config.component import ComponentConfig
 from aide.core.config.datamodule import DataModuleConfig
 from aide.core.config.infrastructure import InfrastructureConfig
-from aide.core.config.trainable import TrainableConfig
 from aide.core.config.trainer import TrainerConfig
 
 
@@ -28,11 +28,13 @@ class ExperimentConfig(BaseModel):
     trainable pipeline, data module, trainer, and infrastructure settings.
     """
 
-    metadata: ExperimentMetadata = Field(..., description="The metadata for the experiment.")
+    metadata: ExperimentMetadata = Field(
+        default=..., description="The metadata for the experiment."
+    )
 
-    trainable: TrainableConfig = Field(..., description="The trainable pipeline configuration.")
+    model: ComponentConfig = Field(default=..., description="The trainable pipeline configuration.")
 
-    datamodule: DataModuleConfig = Field(..., description="The data module configuration.")
+    datamodule: DataModuleConfig = Field(default=..., description="The data module configuration.")
 
     trainer: TrainerConfig = Field(
         default_factory=TrainerConfig, description="The trainer configuration."
@@ -43,5 +45,5 @@ class ExperimentConfig(BaseModel):
     )
 
     infrastructure: InfrastructureConfig = Field(
-        ..., description="The infrastructure configuration."
+        default=..., description="The infrastructure configuration."
     )

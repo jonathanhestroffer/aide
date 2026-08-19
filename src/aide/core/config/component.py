@@ -12,7 +12,9 @@ class ComponentConfig(BaseModel):
     including the fully qualified class name and any parameters required for initialization.
     """
 
-    class_name: str = Field(..., description="The fully qualified class name of the component.")
+    class_name: str = Field(
+        default=..., description="The fully qualified class name of the component."
+    )
 
     params: dict[str, Any] = Field(
         default_factory=dict, description="The parameters for the component."
