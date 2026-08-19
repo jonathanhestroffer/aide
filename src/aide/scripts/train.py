@@ -3,10 +3,10 @@ from __future__ import annotations
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
+from aide.components.factory import build_trainable
 from aide.core.config import ExperimentConfig
 from aide.core.datamodule import build_datamodule
 from aide.core.trainer import Trainer
-from aide.models.factory import build_trainable_model
 from aide.utils.plugins import load_plugins
 
 
@@ -18,9 +18,9 @@ def main(cfg: DictConfig) -> None:
 
     experiment_config = ExperimentConfig.model_validate(config_data)
 
-    load_plugins(experiment_config.infrastructure.plugins)
+    load_plugins()
 
-    model = build_trainable_model(experiment_config.trainable)
+    model = build_trainable(experiment_config.model)
     datamodule = build_datamodule(experiment_config.datamodule)
 
     trainer = Trainer(experiment_config)
