@@ -21,8 +21,8 @@ DEFAULT_LAYOUT: tuple[ScaffoldFile, ...] = (
     ),
     ScaffoldFile(relative_path="configs/model/cnn.yaml", template_name="config_model_cnn.yaml"),
     ScaffoldFile(
-        relative_path="configs/datamodule/artifact.yaml",
-        template_name="config_datamodule_artifact.yaml",
+        relative_path="configs/datamodule/default.yaml",
+        template_name="config_datamodule_default.yaml",
     ),
     ScaffoldFile(
         relative_path="configs/trainer/default.yaml",
@@ -44,11 +44,11 @@ DEFAULT_LAYOUT: tuple[ScaffoldFile, ...] = (
     ),
     ScaffoldFile(relative_path="plugins/models/cnn.py", template_name="plugins_models_cnn.py"),
     ScaffoldFile(
-        relative_path="plugins/components/__init__.py",
-        template_name="plugins_components__init__.py",
+        relative_path="plugins/data/__init__.py",
+        template_name="plugins_data__init__.py",
     ),
     ScaffoldFile(
-        relative_path="plugins/components/transforms.py",
-        template_name="plugins_components_transforms.py",
+        relative_path="plugins/data/dataset.py",
+        template_name="plugins_data_dataset.py",
     ),
 )

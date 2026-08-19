@@ -2,8 +2,8 @@
 
 defaults:
   - /config
-  - /model@trainable.model: cnn
-  - /datamodule: artifact
+  - /model: cnn
+  - /datamodule: default
   - /trainer: default
   - /infrastructure: local
   - /checkpoint: default
@@ -13,7 +13,3 @@ metadata:
   name: default
   description: scaffold experiment
   tags: [scaffold]
-
-trainable:
-  preprocessor: null
-  postprocessor: null

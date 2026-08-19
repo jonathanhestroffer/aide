@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 
-from aide.scaffold.dataset import create_procedural_shapes_artifacts
-from aide.scaffold.generator import ScaffoldResult, scaffold_experiment, write_dataset_manifest_uri
+from aide.scaffold.generator import ScaffoldResult, scaffold_experiment
 
 
-def _print_scaffold_result(result: ScaffoldResult, manifest_path: str) -> None:
+def _print_scaffold_result(result: ScaffoldResult) -> None:
     """Prints the result of the scaffold generation to the console."""
 
     for rel_path in result.created:
@@ -19,13 +17,7 @@ def _print_scaffold_result(result: ScaffoldResult, manifest_path: str) -> None:
     for rel_path in result.skipped:
         print(f"skip (exists): {rel_path}")
 
-    print(
-        "\nDone. Next steps:"
-        "\n  cd "
-        f"{result.base_path}"
-        f"\n  Procedural shapes manifest: {manifest_path}"
-        "\n  aide train --experiment default"
-    )
+    print(f"\nDone. Next steps:\n  cd {result.base_path}\n  aide train --experiment default")
 
 
 def aide_init_command(
@@ -49,10 +41,7 @@ def aide_init_command(
         target_dir=target_dir,
         overwrite=overwrite,
     )
-    resolved_artifact_dir = artifact_dir or str(Path.cwd())
-    manifest_path = create_procedural_shapes_artifacts(resolved_artifact_dir)
-    write_dataset_manifest_uri(result.base_path, str(manifest_path))
-    _print_scaffold_result(result, str(manifest_path))
+    _print_scaffold_result(result)
     return 0
 
 
