@@ -4,7 +4,6 @@ import pytest
 
 from aide.scaffold.generator import (
     scaffold_experiment,
-    write_dataset_manifest_uri,
 )
 from aide.scaffold.layout import DEFAULT_LAYOUT
 
@@ -45,7 +44,7 @@ def test_scaffold_experiment_creates_nested_directories(tmp_path: Path):
     assert (base_path / "configs" / "checkpoint").is_dir()
     assert (base_path / "plugins").is_dir()
     assert (base_path / "plugins" / "models").is_dir()
-    assert (base_path / "plugins" / "components").is_dir()
+    assert (base_path / "plugins" / "data").is_dir()
 
 
 def test_scaffold_experiment_second_run_skips_existing_files(tmp_path: Path):
@@ -119,21 +118,3 @@ def test_scaffold_result_is_immutable(tmp_path: Path):
 
     with pytest.raises(AttributeError):
         result.base_path = tmp_path  # type: ignore
-
-
-def test_write_dataset_manifest_uri(tmp_path: Path):
-    scaffold_experiment(
-        target_dir=str(tmp_path),
-    )
-
-    base_path = tmp_path
-
-    write_dataset_manifest_uri(
-        base_path,
-        "/shared/datasets/procedural_shapes/manifest.json",
-    )
-
-    env_path = base_path / ".env"
-    contents = env_path.read_text(encoding="utf-8")
-
-    assert ("AIDE_DATASET_MANIFEST=/shared/datasets/procedural_shapes/manifest.json") in contents

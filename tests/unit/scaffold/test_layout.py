@@ -8,7 +8,7 @@ EXPECTED_PATHS = {
     "configs/config.yaml",
     "configs/experiment/default.yaml",
     "configs/model/cnn.yaml",
-    "configs/datamodule/artifact.yaml",
+    "configs/datamodule/default.yaml",
     "configs/trainer/default.yaml",
     "configs/infrastructure/local.yaml",
     "configs/checkpoint/default.yaml",
@@ -16,8 +16,8 @@ EXPECTED_PATHS = {
     "plugins/__init__.py",
     "plugins/models/__init__.py",
     "plugins/models/cnn.py",
-    "plugins/components/__init__.py",
-    "plugins/components/transforms.py",
+    "plugins/data/__init__.py",
+    "plugins/data/dataset.py",
 }
 
 

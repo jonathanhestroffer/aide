@@ -24,11 +24,8 @@ def test_registry_basic_operations():
 
 
 def test_registry_key_validation():
-    def validator(key, obj):
-        if not isinstance(obj, str):
-            raise ValueError("Object must be a string")
 
-    registry = Registry("test_registry", validator=validator)
+    registry = Registry("test_registry")
 
     # Test adding a valid object
     registry.add("key1", "value1")
@@ -37,8 +34,8 @@ def test_registry_key_validation():
     # Test adding an invalid object
     try:
         registry.add("key2", 123)  # Not a string
-    except ValueError as e:
-        assert str(e) == "Object must be a string"
+    except TypeError as e:
+        assert "must be or inherit from builtins.str" in str(e)
 
 
 def test_registry_allow_override():

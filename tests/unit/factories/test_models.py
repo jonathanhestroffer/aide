@@ -1,5 +1,4 @@
 from aide.core.config.component import ComponentConfig
-from aide.core.config.trainable import TrainableConfig
 from aide.core.trainable import TrainableModel
 from aide.models.factory import build_trainable_model
 from aide.registry.registries import ModelRegistry
@@ -26,12 +25,8 @@ def test_build_trainable_model():
     ModelRegistry.add("ExampleTrainableModel", ExampleTrainableModel)
 
     # Build the trainable model using the factory function
-    trainable_config = TrainableConfig(
-        model=ComponentConfig(
-            class_name="ExampleTrainableModel", params={"param1": 10, "param2": 20}
-        ),
-        preprocessor=None,
-        postprocessor=None,
+    trainable_config = ComponentConfig(
+        class_name="ExampleTrainableModel", params={"param1": 10, "param2": 20}
     )
 
     model_instance = build_trainable_model(trainable_config)
