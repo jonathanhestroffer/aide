@@ -52,6 +52,18 @@ def ensure_project_env(env_file: str | Path | None = None) -> dict[str, str]:
     }
 
 
+def _user_plugin_packages_from_env(env_file: str | Path | None = None) -> list[str] | None:
+    """Extract additional plugin package names from environment state."""
+    load_environment(env_file)
+
+    raw_plugins = os.environ.get("AIDE_PLUGINS") or os.environ.get("ML_PLATFORM_PLUGINS")
+    if not raw_plugins:
+        return None
+
+    packages = [plugin.strip() for plugin in raw_plugins.split(",") if plugin.strip()]
+    return packages or None
+
+
 def load_plugins(
     user_plugins: list[str] | None = None,
     *,
@@ -59,7 +71,15 @@ def load_plugins(
     project_root: str | Path | None = None,
 ) -> None:
     """Load and register framework plus user plugins via discover_and_import."""
-    package_names = [*user_plugins] if user_plugins else None
+    env_packages = _user_plugin_packages_from_env(env_file)
+    package_names = []
+
+    if user_plugins:
+        package_names.extend(user_plugins)
+    if env_packages:
+        package_names.extend(env_packages)
+
+    package_names = list(dict.fromkeys(package_names)) if package_names else None
 
     if project_root is not None:
         plugin_dir = Path(project_root).expanduser().resolve() / "plugins"

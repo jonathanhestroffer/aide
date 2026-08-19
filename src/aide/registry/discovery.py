@@ -8,6 +8,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from types import ModuleType
 
+FRAMEWORK_PACKAGES = ["aide"]
+
 
 def discover_and_import(
     user_packages: list[str] | None = None,
@@ -21,7 +23,11 @@ def discover_and_import(
     """
     imported_modules: dict[str, ModuleType] = {}
 
+    # Framework packages — always import these first.
+    _walk_packages(FRAMEWORK_PACKAGES, imported_modules)
+
     # User-owned packages — can be anywhere on sys.path, no relation to AIDE.
+    # these override any framework packages if there are name conflicts.
     if user_packages:
         _walk_packages(user_packages, imported_modules)
 
@@ -66,6 +72,45 @@ def _walk_packages(package_names: list[str], imported_modules: dict[str, ModuleT
         for module_info in pkgutil.walk_packages(package_path, prefix=f"{package_name}."):
             module = importlib.import_module(module_info.name)
             imported_modules[module_info.name] = module
+
+        for path_entry in package_path:
+            for file_path in _iter_package_python_files(Path(path_entry)):
+                module_name = _module_name_from_package(package_name, Path(path_entry), file_path)
+                if module_name in imported_modules:
+                    continue
+
+                existing_module = sys.modules.get(module_name)
+                if existing_module is not None:
+                    imported_modules[module_name] = existing_module
+                    continue
+
+                module = importlib.import_module(module_name)
+                imported_modules[module_name] = module
+
+
+def _module_name_from_package(package_name: str, package_root: Path, file_path: Path) -> str:
+    """Build module name for a file under a package root."""
+    relative = file_path.relative_to(package_root)
+    module_parts = list(relative.with_suffix("").parts)
+
+    if module_parts and module_parts[-1] == "__init__":
+        module_parts = module_parts[:-1]
+
+    if not module_parts:
+        return package_name
+
+    return ".".join([package_name, *module_parts])
+
+
+def _iter_package_python_files(root: Path) -> Iterable[Path]:
+    """Recursively yield Python files under a package path entry."""
+    if not root.is_dir():
+        return
+
+    for file_path in sorted(root.rglob("*.py")):
+        if "__pycache__" in file_path.parts:
+            continue
+        yield file_path
 
 
 def _walk_python_files(plugin_dir: str, imported_modules: dict[str, ModuleType]) -> None:
