@@ -27,7 +27,7 @@ def test_cli_list_help():
     result = subprocess.run(["aide", "list", "--help"], capture_output=True, text=True)
     assert result.returncode == 0
     assert (
-        "List registered models, components, or transforms for the current project" in result.stdout
+        "List registered models, datasets, or transforms for the current project." in result.stdout
     )
 
 

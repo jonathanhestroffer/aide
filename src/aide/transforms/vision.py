@@ -4,17 +4,17 @@ import torch
 from torchvision.transforms import functional as TF
 
 from aide.registry.registries import TransformRegistry
-from aide.transforms.base import _SplitAwareTransform
+from aide.utils.transforms import _SplitAwareTransform
 
 
-@TransformRegistry.register("aide_normalize")
+@TransformRegistry.register("AIDE_normalize")
 class NormalizeToUnitRange(_SplitAwareTransform):
     """Convert uint8 image tensors to float tensors in [0, 1]."""
 
     def __init__(self, *, apply_to: list[str] | None = None) -> None:
         super().__init__(apply_to=apply_to or ["all"])
 
-    def _transform_image(self, image: torch.Tensor) -> torch.Tensor:
+    def _transform(self, image: torch.Tensor) -> torch.Tensor:
         if not isinstance(image, torch.Tensor):
             raise TypeError(f"Expected image tensor, got: {type(image).__name__}")
 
@@ -24,7 +24,7 @@ class NormalizeToUnitRange(_SplitAwareTransform):
         return image.float().div(255.0)
 
 
-@TransformRegistry.register("aide_random_crop")
+@TransformRegistry.register("AIDE_random_crop")
 class RandomCrop(_SplitAwareTransform):
     """Random crop with optional padding for training augmentation."""
 
@@ -39,7 +39,7 @@ class RandomCrop(_SplitAwareTransform):
         self.size = size
         self.padding = padding
 
-    def _transform_image(self, image: torch.Tensor) -> torch.Tensor:
+    def _transform(self, image: torch.Tensor) -> torch.Tensor:
         if not isinstance(image, torch.Tensor):
             raise TypeError(f"Expected image tensor, got: {type(image).__name__}")
 

@@ -13,10 +13,7 @@ EXPECTED_PATHS = {
     "configs/infrastructure/local.yaml",
     "configs/checkpoint/default.yaml",
     ".env",
-    "plugins/__init__.py",
-    "plugins/models/__init__.py",
     "plugins/models/cnn.py",
-    "plugins/data/__init__.py",
     "plugins/data/dataset.py",
 }
 

@@ -98,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
     list_parser = subparsers.add_parser(
         "list",
         help="List registered registry entries",
-        description="List registered models, components, or transforms for the current project.",
+        description="List registered models, datasets, or transforms for the current project.",
     )
 
     list_parser.add_argument(

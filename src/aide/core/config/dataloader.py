@@ -34,4 +34,7 @@ class DataLoaderConfig(BaseModel):
         """
         if other is None:
             return self
-        return self.model_copy(update=other.model_dump())
+
+        # Only include fields explicitly set on 'other'
+        override_fields = other.model_dump(exclude_unset=True)
+        return self.model_copy(update=override_fields)

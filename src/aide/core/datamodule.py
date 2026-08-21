@@ -92,6 +92,10 @@ class ArtifactDataModule(L.LightningDataModule):
         self.val_dataloader_params = global_dataloader.override_with(config.val_dataloader)
         self.test_dataloader_params = global_dataloader.override_with(config.test_dataloader)
 
+        print(self.train_dataloader_params)
+        print(self.val_dataloader_params)
+        print(self.test_dataloader_params)
+
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         return DataLoader(self.train_dataset, **self.train_dataloader_params.model_dump())
 
