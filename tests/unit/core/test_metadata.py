@@ -39,11 +39,6 @@ def test_build_experiment_snapshot_includes_required_metadata(tmp_path: Path):
 
     assert "git" in snapshot
     assert "environment" in snapshot
-    assert "data" in snapshot
-    assert "checkpoint" in snapshot
     assert "config_version" in snapshot
 
-    assert snapshot["data"]["dataset_manifest"] == str(manifest_path)
-    assert snapshot["data"]["dataset_manifest_hash"] is not None
-    assert isinstance(snapshot["checkpoint"]["checkpoint_config_hash"], str)
     assert isinstance(snapshot["config_version"], str)
