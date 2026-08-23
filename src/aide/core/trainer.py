@@ -3,6 +3,7 @@ import lightning as L
 from aide.callbacks.factory import build_callbacks
 from aide.core.config import ExperimentConfig, InfrastructureConfig, TrainerConfig
 from aide.core.logger import MLFlowLoggerAdapter
+from aide.core.metadata import build_experiment_snapshot
 from aide.core.trainable import TrainableModel
 
 
@@ -37,6 +38,10 @@ class Trainer:
         )
 
         self.experiment_config = cfg.model_dump(exclude_none=True)
+        self.experiment_config["snapshot"] = build_experiment_snapshot(
+            cfg,
+            self.experiment_config,
+        )
 
     def fit(
         self,
